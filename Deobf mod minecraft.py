@@ -210,6 +210,44 @@ def java_exists() -> bool:
     return shutil.which("java") is not None
 
 
+def check_vineflower_startup() -> None:
+    """
+    Kiểm tra file vineflower.jar ngay khi chương trình vừa chạy.
+    Nếu không tìm thấy, cảnh báo người dùng và hướng dẫn cách khắc phục.
+    """
+
+    vf = find_vineflower()
+
+    if vf:
+        print(
+            c(f"[+] Đã tìm thấy Vineflower: {vf.name}", GREEN)
+        )
+        return
+
+    print(
+        c("=" * 60, YELLOW)
+    )
+    print(
+        c("[!] CẢNH BÁO: Không tìm thấy file vineflower.jar", YELLOW)
+    )
+    print(
+        c(f"    Vui lòng đặt file vineflower.jar vào: {BASE_DIR}", YELLOW)
+    )
+    print(
+        c("    Tải tại: https://github.com/Vineflower/vineflower/releases", YELLOW)
+    )
+    print(
+        c("    Chương trình vẫn chạy được, nhưng chức năng", YELLOW)
+    )
+    print(
+        c("    Decompile (Vineflower) sẽ không hoạt động cho tới khi bạn thêm file.", YELLOW)
+    )
+    print(
+        c("=" * 60, YELLOW)
+    )
+    print()
+
+
 def java_version() -> str:
     if not java_exists():
         return "Java not found"
@@ -1939,6 +1977,8 @@ Examples:
 # ============================================================
 
 if __name__ == "__main__":
+
+    check_vineflower_startup()
 
     try:
         cli_mode()
