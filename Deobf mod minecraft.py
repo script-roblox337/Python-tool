@@ -50,9 +50,8 @@ from typing import Dict, List, Tuple, Optional
 
 BASE_DIR = Path(__file__).resolve().parent
 
-LIB_DIR = BASE_DIR / "vineflower"
-
-VINEFLOWER = LIB_DIR / "vineflower.jar"
+VINEFLOWER_DIR = BASE_DIR / "vineflower"
+VINEFLOWER = VINEFLOWER_DIR / "vineflower.jar"
 
 INPUT_DIR = BASE_DIR / "input"
 OUTPUT_DIR = BASE_DIR / "output"
@@ -63,7 +62,7 @@ WORK_DIR = BASE_DIR / "work"
 MAPPING_FILE = BASE_DIR / "mappings.json"
 
 for directory in (
-    LIB_DIR,
+    VINEFLOWER_DIR,
     INPUT_DIR,
     OUTPUT_DIR,
     REPORT_DIR,
@@ -239,18 +238,26 @@ def java_version() -> str:
 def find_vineflower() -> Optional[Path]:
     candidates = [
         VINEFLOWER,
-        LIB_DIR / "vineflower-1.12.0.jar",
-        LIB_DIR / "vineflower-1.11.2.jar",
-        LIB_DIR / "vineflower-1.11.1.jar",
+        VINEFLOWER_DIR / "vineflower-1.12.0.jar",
+        VINEFLOWER_DIR / "vineflower-1.11.2.jar",
+        VINEFLOWER_DIR / "vineflower-1.11.1.jar",
+        # Tương thích ngược: vẫn hỗ trợ nếu người dùng đặt jar
+        # trực tiếp trong thư mục gốc như phiên bản cũ.
+        BASE_DIR / "vineflower.jar",
+        BASE_DIR / "vineflower-1.12.0.jar",
+        BASE_DIR / "vineflower-1.11.2.jar",
+        BASE_DIR / "vineflower-1.11.1.jar",
     ]
 
     for candidate in candidates:
         if candidate.is_file():
             return candidate
 
-    if LIB_DIR.is_dir():
-        for jar_file in sorted(LIB_DIR.glob("vineflower*.jar")):
-            return jar_file
+    # Quét mọi file .jar có tên bắt đầu bằng "vineflower" trong thư mục dành riêng.
+    if VINEFLOWER_DIR.is_dir():
+        matches = sorted(VINEFLOWER_DIR.glob("vineflower*.jar"))
+        if matches:
+            return matches[0]
 
     return None
 
@@ -291,8 +298,8 @@ def run_vineflower(
 
     if not vf:
         error("Không tìm thấy vineflower.jar")
-        print(f"Đặt file tại thư mục: {LIB_DIR}")
-        print(f"(ví dụ: {VINEFLOWER})")
+        print(f"Đặt file tại: {VINEFLOWER}")
+        print(f"(Thư mục sẽ tự tạo khi chạy: {VINEFLOWER_DIR})")
         return False
 
     if not java_exists():
@@ -1699,6 +1706,14 @@ def system_check():
                 RED,
             )
         )
+
+        print(
+            f"Đặt file .jar vào: {VINEFLOWER_DIR}"
+        )
+
+    print(
+        f"Vineflower dir: {VINEFLOWER_DIR}"
+    )
 
     print(
         f"Input dir   : {INPUT_DIR}"
