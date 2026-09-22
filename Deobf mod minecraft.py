@@ -50,7 +50,9 @@ from typing import Dict, List, Tuple, Optional
 
 BASE_DIR = Path(__file__).resolve().parent
 
-VINEFLOWER = BASE_DIR / "vineflower.jar"
+LIB_DIR = BASE_DIR / "vineflower"
+
+VINEFLOWER = LIB_DIR / "vineflower.jar"
 
 INPUT_DIR = BASE_DIR / "input"
 OUTPUT_DIR = BASE_DIR / "output"
@@ -61,6 +63,7 @@ WORK_DIR = BASE_DIR / "work"
 MAPPING_FILE = BASE_DIR / "mappings.json"
 
 for directory in (
+    LIB_DIR,
     INPUT_DIR,
     OUTPUT_DIR,
     REPORT_DIR,
@@ -210,44 +213,6 @@ def java_exists() -> bool:
     return shutil.which("java") is not None
 
 
-def check_vineflower_startup() -> None:
-    """
-    Kiểm tra file vineflower.jar ngay khi chương trình vừa chạy.
-    Nếu không tìm thấy, cảnh báo người dùng và hướng dẫn cách khắc phục.
-    """
-
-    vf = find_vineflower()
-
-    if vf:
-        print(
-            c(f"[+] Đã tìm thấy Vineflower: {vf.name}", GREEN)
-        )
-        return
-
-    print(
-        c("=" * 60, YELLOW)
-    )
-    print(
-        c("[!] CẢNH BÁO: Không tìm thấy file vineflower.jar", YELLOW)
-    )
-    print(
-        c(f"    Vui lòng đặt file vineflower.jar vào: {BASE_DIR}", YELLOW)
-    )
-    print(
-        c("    Tải tại: https://github.com/Vineflower/vineflower/releases", YELLOW)
-    )
-    print(
-        c("    Chương trình vẫn chạy được, nhưng chức năng", YELLOW)
-    )
-    print(
-        c("    Decompile (Vineflower) sẽ không hoạt động cho tới khi bạn thêm file.", YELLOW)
-    )
-    print(
-        c("=" * 60, YELLOW)
-    )
-    print()
-
-
 def java_version() -> str:
     if not java_exists():
         return "Java not found"
@@ -274,14 +239,18 @@ def java_version() -> str:
 def find_vineflower() -> Optional[Path]:
     candidates = [
         VINEFLOWER,
-        BASE_DIR / "vineflower-1.12.0.jar",
-        BASE_DIR / "vineflower-1.11.2.jar",
-        BASE_DIR / "vineflower-1.11.1.jar",
+        LIB_DIR / "vineflower-1.12.0.jar",
+        LIB_DIR / "vineflower-1.11.2.jar",
+        LIB_DIR / "vineflower-1.11.1.jar",
     ]
 
     for candidate in candidates:
         if candidate.is_file():
             return candidate
+
+    if LIB_DIR.is_dir():
+        for jar_file in sorted(LIB_DIR.glob("vineflower*.jar")):
+            return jar_file
 
     return None
 
@@ -322,7 +291,8 @@ def run_vineflower(
 
     if not vf:
         error("Không tìm thấy vineflower.jar")
-        print(f"Đặt file tại: {VINEFLOWER}")
+        print(f"Đặt file tại thư mục: {LIB_DIR}")
+        print(f"(ví dụ: {VINEFLOWER})")
         return False
 
     if not java_exists():
@@ -1977,8 +1947,6 @@ Examples:
 # ============================================================
 
 if __name__ == "__main__":
-
-    check_vineflower_startup()
 
     try:
         cli_mode()
